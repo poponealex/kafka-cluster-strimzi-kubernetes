@@ -1,0 +1,19 @@
+apiVersion: registry.apicur.io/v1
+kind: ApicurioRegistry
+metadata:
+  name: registry
+spec:
+  configuration:
+    kafkasql:
+      bootstrapServers: kafka-kafka-bootstrap:9092
+      security:
+        scram:
+          mechanism: SCRAM-SHA-512
+          passwordSecretName: registry-user
+          truststoreSecretName: kafka-cluster-ca-cert
+          user: registry-user
+    logLevel: INFO
+    persistence: kafkasql
+    registryLogLevel: INFO
+  deployment:
+    replicas: 1

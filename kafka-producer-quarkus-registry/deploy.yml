@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+  name: kafka-producer-quarkus-registry
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: kafka-producer-quarkus-registry
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: kafka-producer-quarkus-registry
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+      - env:
+        - name: truststorepassword
+          valueFrom:
+            secretKeyRef:
+              key: ca.password
+              name: kafka-cluster-ca-cert
+        
+        envFrom:
+        - secretRef:
+            name: kafka-producer-quarkus-registry-user
+        image: quay.io/olivierits4u/kafka-producer-quarkus-registry:1.0.0
+        imagePullPolicy: Always
+
+        name: kafka-producer-quarkus-registry
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /truststore
+          name: truststore-volume
+        - mountPath: /home/jboss/config
+          name: kafka-producer-quarkus-registry-cm
+          readOnly: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: truststore-volume
+        secret:
+          optional: false
+          secretName: kafka-cluster-ca-cert
+      - configMap:
+          name: kafka-producer-quarkus-registry-cm
+        name: kafka-producer-quarkus-registry-cm

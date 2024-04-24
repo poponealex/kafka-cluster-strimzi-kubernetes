@@ -1,0 +1,13 @@
+apiVersion: v1
+data:
+  application.properties: |
+    kafka.topic.name=film-topic
+    kafka.bootstrap.servers=kafka-kafka-bootstrap:9092
+    mp.messaging.outgoing.films.apicurio.registry.url=http://registry-service:8080/apis/registry/v2
+
+     
+
+
+kind: ConfigMap
+metadata:
+  name: kafka-producer-quarkus-registry-cm

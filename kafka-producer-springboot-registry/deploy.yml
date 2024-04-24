@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: kafka-producer-springboot-registry
+  name: kafka-producer-springboot-registry
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: kafka-producer-springboot-registry
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: kafka-producer-springboot-registry
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+      - image: quay.io/olivierits4u/kafka-producer-springboot-registry:1.0.0
+        imagePullPolicy: Always
+        name: kafka-producer-springboot-registry
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        env:
+        - name: JDK_JAVA_OPTIONS
+          value: "-Dspring.config.additional-location=file:/config/application.yml"
+       
+        - name: TZ
+          value: "Europe/Luxembourg"
+        - name: SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG
+          valueFrom:
+            secretKeyRef:
+              name: kafka-producer-springboot-registry-user
+              key: sasl.jaas.config
+        - name: SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kafka-cluster-ca-cert
+              key: ca.password
+        volumeMounts:
+        - name: kafka-producer-springboot-registry-cm
+          mountPath: /config
+        - name: kafka-producer-springboot-registry-truststore
+          mountPath: /truststore
+       
+      volumes:
+        - name: kafka-producer-springboot-registry-cm
+          configMap:
+            name: kafka-producer-springboot-registry-cm
+        - name: kafka-producer-springboot-registry-truststore
+          secret:
+            secretName: kafka-cluster-ca-cert
+       
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30

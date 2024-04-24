@@ -1,0 +1,18 @@
+apiVersion: v1
+data:
+  application.properties: |
+    kafka.topic.name=film-topic
+    kafka.bootstrap.servers=kafka-kafka-bootstrap:9092
+    mp.messaging.incoming.films.bootstrap.servers=kafka-kafka-bootstrap:9092
+
+    quarkus.config.locations=file:/database-param-quarkus/application-secret.properties
+    quarkus.datasource.jdbc.url=jdbc:mysql://mysql:3306/cdc
+    mp.messaging.incoming.films.apicurio.registry.url=http://registry-service:8080/apis/registry/v2
+
+    
+kind: ConfigMap
+metadata:
+  name: kafka-consumer-quarkus-registry-cm
+
+
+ 

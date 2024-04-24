@@ -1,0 +1,35 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: debezium-connector-mysql
+  labels:
+    strimzi.io/cluster: debezium-connect-cluster
+  
+spec:
+  class: io.debezium.connector.mysql.MySqlConnector
+  tasksMax: 1
+  config:
+    tasks.max: 1
+    database.hostname: mysql
+    database.port: 3306
+    database.user: ${secrets:mysql-secret:rootusername}
+    database.password: ${secrets:mysql-secret:rootpassword}
+    database.server.id: 184054
+    topic.prefix: cdc
+    database.include.list: cdc
+    database.whitelist: "cdc"
+    include.schema.changes: "true"
+    schema.history.internal.kafka.topic: "schema-changes.inventory"
+    schema.history.internal.kafka.bootstrap.servers: kafka-kafka-bootstrap:9092
+    schema.history.internal.consumer.security.protocol: SASL_SSL
+    schema.history.internal.consumer.sasl.mechanism: SCRAM-SHA-512
+    schema.history.internal.consumer.sasl.jaas.config: ${secrets:debezium-user:sasl.jaas.config}
+    schema.history.internal.producer.security.protocol: SASL_SSL
+    schema.history.internal.producer.sasl.mechanism: SCRAM-SHA-512
+    schema.history.internal.producer.sasl.jaas.config: ${secrets:debezium-user:sasl.jaas.config}
+    #schema.history.internal.producer
+    schema.history.internal.producer.ssl.truststore.location: /opt/kafka/external-configuration/kafka-cluster-ca-cert/ca.p12
+    schema.history.internal.producer.ssl.truststore.password: ${secrets:kafka-cluster-ca-cert:ca.password}
+    #schema.history.internal.consumer
+    schema.history.internal.consumer.ssl.truststore.location: /opt/kafka/external-configuration/kafka-cluster-ca-cert/ca.p12
+    schema.history.internal.consumer.ssl.truststore.password:  ${secrets:kafka-cluster-ca-cert:ca.password}

@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: kafka-consumer-springboot
+  name: kafka-consumer-springboot
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: kafka-consumer-springboot
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: kafka-consumer-springboot
+    spec:
+      imagePullSecrets:
+      - name: regcred
+      
+      containers:
+      - image: quay.io/olivierits4u/kafka-consumer-springboot:1.0.0
+        imagePullPolicy: Always
+        name: kafka-consumer-springboot
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        env:
+        - name: JDK_JAVA_OPTIONS
+          value: "-Dspring.config.additional-location=file:/config/application.yml,file:/database-param-spring/application-secret.yml"
+        - name: TZ
+          value: "Europe/Luxembourg"
+        - name: SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG
+          valueFrom:
+            secretKeyRef:
+              name: kafka-consumer-springboot-user
+              key: sasl.jaas.config
+        - name: SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kafka-cluster-ca-cert
+              key: ca.password
+        volumeMounts:
+        - name: kafka-consumer-springboot-cm
+          mountPath: /config
+        - name: kafka-consumer-springboot-truststore
+          mountPath: /truststore
+        - name: database-param-spring
+          mountPath: /database-param-spring
+      volumes:
+        - name: kafka-consumer-springboot-cm
+          configMap:
+            name: kafka-consumer-springboot-cm
+        - name: kafka-consumer-springboot-truststore
+          secret:
+            secretName: kafka-cluster-ca-cert
+        - name: database-param-spring
+          secret:
+            secretName: database-param-spring
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+       

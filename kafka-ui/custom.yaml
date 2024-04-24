@@ -1,0 +1,67 @@
+replicaCount: 1
+
+image:
+  registry: docker.io
+  repository: provectuslabs/kafka-ui
+  pullPolicy: Always
+  tag: "v0.7.2"   
+existingSecret: "kafka-ui-user" 
+envs:
+  config: 
+    KAFKA_CLUSTERS_0_NAME: kafka
+    KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-kafka-bootstrap:9093
+    KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL: SASL_PLAINTEXT
+    KAFKA_CLUSTERS_0_PROPERTIES_SASL_MECHANISM: SCRAM-SHA-512
+    KAFKA_CLUSTERS_0_PROPERTIES_SASL_JAAS_CONFIG: "${sasl.jaas.config}"
+    KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://registry-service:8080/apis/ccompat/v6
+    #KAFKA_CLUSTERS_0_PROPERTIES_SSL_TRUSTSTORE_LOCATION: /config/ca.p12
+    #KAFKA_CLUSTERS_0_PROPERTIES_SSL_TRUSTSTORE_PASSWORD: @@jks_password@@
+    AUTH_TYPE: "LOGIN_FORM"
+    SPRING_SECURITY_USER_NAME: admin
+    SPRING_SECURITY_USER_PASSWORD: admin
+
+
+#volumeMounts: 
+#  - name: truststore
+#    mountPath: /config
+    
+#volumes: 
+#  - name: truststore
+#    secret:
+#      secretName: kafka-cluster-ca-cert
+
+
+
+ingress:
+  # Enable ingress resource
+  enabled: true
+
+  # Annotations for the Ingress
+  annotations: {}
+
+  # ingressClassName for the Ingress
+  ingressClassName: ""
+
+  # The path for the Ingress
+  path: "/"
+
+  # The path type for the Ingress
+  pathType: "Prefix"  
+
+  # The hostname for the Ingress
+  host: "kafka-ui.kafkadev.com"
+
+  # configs for Ingress TLS
+  tls:
+    # Enable TLS termination for the Ingress
+    enabled: false
+    # the name of a pre-created Secret containing a TLS private key and certificate
+    secretName: ""
+
+  # HTTP paths to add to the Ingress before the default path
+  precedingPaths: []
+
+  # Http paths to add to the Ingress after the default path
+  succeedingPaths: []
+
+ 
